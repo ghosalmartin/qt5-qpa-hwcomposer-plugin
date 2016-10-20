@@ -248,6 +248,10 @@ HwComposerBackend_v11::createWindow(int width, int height)
     layer->planeAlpha = tryToForceGLES ? 1 : 255;
 #endif
 
+#ifdef HWC_DEVICE_API_VERSION_1_5
+    layer->surfaceDamage.numRects = 0;
+#endif
+
     layer = &hwc_list->hwLayers[1];
     memset(layer, 0, sizeof(hwc_layer_1_t));
     layer->compositionType = HWC_FRAMEBUFFER_TARGET;
@@ -281,6 +285,9 @@ HwComposerBackend_v11::createWindow(int width, int height)
     hwc_list->outbufAcquireFenceFd = -1;
 #endif
 
+#ifdef HWC_DEVICE_API_VERSION_1_5
+    layer->surfaceDamage.numRects = 0;
+#endif
 
     HWComposer *hwc_win = new HWComposer(width, height, HAL_PIXEL_FORMAT_RGBA_8888,
                                          hwc_device, hwc_mList, &hwc_list->hwLayers[1], num_displays);
@@ -322,8 +329,14 @@ HwComposerBackend_v11::sleepDisplay(bool sleep)
         // logged.
         m_vsyncTimeout.stop();
 
+
 #ifdef HWC_DEVICE_API_VERSION_1_4
         if (hwc_version == HWC_DEVICE_API_VERSION_1_4) {
+            HWC_PLUGIN_EXPECT_ZERO(hwc_device->setPowerMode(hwc_device, 0, HWC_POWER_MODE_OFF));
+        } else
+#endif
+#ifdef HWC_DEVICE_API_VERSION_1_5
+        if (hwc_version == HWC_DEVICE_API_VERSION_1_5) {
             HWC_PLUGIN_EXPECT_ZERO(hwc_device->setPowerMode(hwc_device, 0, HWC_POWER_MODE_OFF));
         } else
 #endif
@@ -331,6 +344,11 @@ HwComposerBackend_v11::sleepDisplay(bool sleep)
     } else {
 #ifdef HWC_DEVICE_API_VERSION_1_4
         if (hwc_version == HWC_DEVICE_API_VERSION_1_4) {
+            HWC_PLUGIN_EXPECT_ZERO(hwc_device->setPowerMode(hwc_device, 0, HWC_POWER_MODE_NORMAL));
+        } else
+#endif
+#ifdef HWC_DEVICE_API_VERSION_1_5
+        if (hwc_version == HWC_DEVICE_API_VERSION_1_5) {
             HWC_PLUGIN_EXPECT_ZERO(hwc_device->setPowerMode(hwc_device, 0, HWC_POWER_MODE_NORMAL));
         } else
 #endif
